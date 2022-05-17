@@ -51,11 +51,11 @@ namespace LinkAdd
                 string str2 = str1.Remove(0, 7);
                 int ind = str2.Length - 8;
                 string title = str2.Remove(ind);
-                label1.Text = title;
+                textBox2.Text = title;
                 try
                 {
                     string connectionString = @"Data Source=C:\Links\LinksDB.db";
-                    string sqlExpression = "INSERT INTO Link (reference, linkname) VALUES ('" + textBox1.Text + "', '" + label1.Text + "')";
+                    string sqlExpression = "INSERT INTO Link (reference, linkname) VALUES ('" + textBox1.Text + "', '" + textBox2.Text + "')";
                     using (var connection = new SQLiteConnection(connectionString))
                     {
                         connection.Open();
@@ -80,8 +80,9 @@ namespace LinkAdd
         }
 
         public void Select_Value()
-        {
+        {            
             string sqlExpression = "SELECT * FROM Link";
+            dataGridView1.Rows.Clear();
             using (var connection = new SQLiteConnection(@"Data Source=C:\Links\LinksDB.db"))
             {
                 connection.Open();
@@ -124,6 +125,56 @@ namespace LinkAdd
             {
                 MessageBox.Show("Error: " + ex.Message);
             }                                   
+            Select_Value();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            string pattern = @"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)";
+            if (textBox1.Text != "" && Regex.IsMatch(textBox1.Text, pattern, RegexOptions.IgnoreCase))
+            {
+                try
+                {
+                    string connectionString = @"Data Source=C:\Links\LinksDB.db";
+                    string sqlExpression = "INSERT INTO Link (reference, linkname) VALUES ('" + textBox1.Text + "', '" + textBox2.Text + "')";
+                    using (var connection = new SQLiteConnection(connectionString))
+                    {
+                        connection.Open();
+                        SQLiteCommand command = new SQLiteCommand();
+                        command.Connection = connection;
+                        command.CommandText = sqlExpression;
+                        command.ExecuteNonQuery();
+                        progressBar1.Value = 100;
+                    }
+                }
+                catch (SQLiteException ex)
+                {
+                    MessageBox.Show("Error: " + ex.Message);
+                }
+                Select_Value();                
+            }
+            else
+            {
+                MessageBox.Show("Введите адрес сайта!");
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {                        
+            //String s = dataGridView1.CurrentCell.Value.ToString();
+            int i = dataGridView1.CurrentCell.RowIndex;
+            String s = dataGridView1[0,i].Value.ToString();            
+            string connectionString = @"Data Source=C:\Links\LinksDB.db";
+            string sqlExpression = "DELETE FROM Link WHERE Id='"+s+"'";
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                SQLiteCommand command = new SQLiteCommand();
+                command.Connection = connection;
+                command.CommandText = sqlExpression;
+                command.ExecuteNonQuery();
+                progressBar1.Value = 100;
+            }
             Select_Value();
         }
     }
